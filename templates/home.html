@@ -1,0 +1,78 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Open Layers Map</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'libs/v6.4.3-dist/ol.css' %}" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
+
+      .grid-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      .navbar {
+        background-color: #f8f9fa;
+        padding: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+      }
+
+      .navbar h2 {
+        margin: 0;
+        display: inline-block;
+      }
+
+      .navbar input {
+        margin-left: 15px;
+      }
+
+      .grid2 {
+        flex: 1;
+        position: relative;
+      }
+
+      .map {
+        width: 100%;
+        height: 100%;
+      }
+
+      .ol-zoom {
+        background-color: white;
+        transform: scale(0.7);
+        transition: background-color 0.3s, transform 0.3s;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grid-container">
+      <div class="navbar">
+        <input type="radio" name="layerbutton" value="OSM_Standard" />
+        OSM_Standard
+        <input type="radio" name="layerbutton" value="OSM_Humanitarian" />
+        OSM_Humanitarian
+        <input type="radio" name="layerbutton" value="Stamen_Terrain" />
+        Stamen_Terrain
+      </div>
+      <div class="grid2">
+        <div id="jsmap" class="map"></div>
+      </div>
+    </div>
+    <script src="{% static 'libs/v6.4.3-dist/ol.js' %}"></script>
+    <script src="{% static 'main.js' %}"></script>
+  </body>
+</html>
