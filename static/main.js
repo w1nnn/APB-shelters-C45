@@ -7,88 +7,60 @@ function init() {
     "EPSG:3857"
   );
 
+  // Membuat instance peta
   let map = new ol.Map({
     target: "jsmap",
-    layers: [
-      new ol.layer.Tile({
-        source: new ol.source.OSM(),
-      }),
-    ],
+    layers: [], // Mulai dengan tanpa layer
     view: new ol.View({
       center: coordinates,
       zoom: 17,
     }),
   });
 
-  // Layer untuk berbagai jenis peta
+  // Membuat layer untuk OSM Standard
   const openStreetMapStandard = new ol.layer.Tile({
     source: new ol.source.OSM(),
     visible: false,
     title: "OSM_Standard",
   });
 
+  // Membuat layer untuk OSM Humanitarian
   const openStreetMapHumanitarian = new ol.layer.Tile({
     source: new ol.source.OSM({
       url: "https://{a-c}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
     }),
-    visible: true, // Set default visible to true
+    visible: true, // Default layer yang ditampilkan
     title: "OSM_Humanitarian",
   });
 
-  const StamenTerrain = new ol.layer.Tile({
+  // Membuat layer untuk Stamen Terrain
+  const stamenTerrain = new ol.layer.Tile({
     source: new ol.source.XYZ({
       url: "http://tile.stamen.com/terrain/{z}/{x}/{y}.jpg",
     }),
-    visible: false,
+    visible: false, // Default tidak ditampilkan
     title: "Stamen_Terrain",
   });
 
+  // Mengelompokkan layer
   const baseLayerGroup = new ol.layer.Group({
-    layers: [openStreetMapHumanitarian, openStreetMapStandard, StamenTerrain],
+    layers: [openStreetMapStandard, openStreetMapHumanitarian, stamenTerrain],
   });
 
-  map.addLayer(baseLayerGroup);
+  map.addLayer(baseLayerGroup); // Menambahkan kelompok layer ke peta
 
-  // Base layer switcher
-  let baseLayer = document.querySelectorAll(".navbar > input[type=radio]");
-  for (let base of baseLayer) {
-    base.addEventListener("change", () => {
-      let select = base.value;
+  // Event listener untuk mengganti layer ketika link diklik
+  const layerLinks = document.querySelectorAll(".navbar a");
+  layerLinks.forEach((link) => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault(); // Menghindari perilaku default link
+      const selectedLayer = link.getAttribute("data-layer");
+
+      // Mengubah visibilitas layer
       baseLayerGroup.getLayers().forEach(function (element) {
-        let bltitle = element.get("title");
-        element.setVisible(bltitle === select);
+        const bltitle = element.get("title");
+        element.setVisible(bltitle === selectedLayer); // Mengubah visibilitas layer
       });
     });
-  }
-
-  const FillStyle = new ol.style.Fill({ color: [84, 118, 255, 1] });
-  const StrokeStyle = new ol.style.Stroke({
-    color: [46, 45, 45, 1],
-    width: 2,
-  });
-  const CircleStyle = new ol.style.Circle({
-    fill: new ol.style.Fill({ color: [249, 49, 5, 1] }),
-    radius: 7,
-    stroke: StrokeStyle,
-  });
-
-  const RouteGeoJson = new ol.layer.Vector({
-    source: new ol.source.Vector({
-      url: "data.geojson",
-      format: new ol.format.GeoJSON(),
-    }),
-    visible: true,
-    title: "route",
-    style: new ol.style.Style({
-      fill: FillStyle,
-      stroke: StrokeStyle,
-      image: CircleStyle,
-    }),
-  });
-
-  map.addLayer(RouteGeoJson);
-
-  map.on("click", function (e) {
-    console.log(e.coordinate);
   });
 }
