@@ -1,11 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
-
-# Create your views here.
+from django.contrib import messages
 
 def index(request):
 
-    # Page from the theme 
     return render(request, 'home.html')
 
 def dashboard(request):
@@ -13,3 +11,17 @@ def dashboard(request):
 
 def login(request):
     return render(request, "accounts/sign-in.html")
+
+def auth(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        if username == 'admin' and password == 'admin':
+            return redirect('/dashboard/')
+        else:
+            messages.error(request, "Invalid username or password.")
+            return render(request, 'accounts/sign-in.html', {'error': "Invalid username or password."}) 
+
+def shelter(request):
+    return render(request, "pages/shelter.html")        

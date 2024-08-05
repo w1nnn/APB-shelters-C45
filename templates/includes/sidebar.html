@@ -5,7 +5,7 @@
     <i class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
     <a class="navbar-brand m-0" href="/">
       <img src="{% static 'img/logo-ct-dark.png' %}" class="navbar-brand-img h-100" alt="main_logo">
-      <span class="ms-1 font-weight-bold">Argon Dashboard</span>
+      <span class="ms-1 font-weight-bold">Shelter APB</span>
     </a>
   </div>
   <hr class="horizontal dark mt-0">
@@ -59,12 +59,32 @@
           {% if request.user.is_superuser %}
           <a href="{% url 'admin:index' %}" class="nav-link {% if 'index' in segment %} active {% endif %}">
           {% else %}
-          <a href="{% url 'index' %}" class="nav-link {% if 'index' in segment %} active {% endif %}">
+          <a href="{% url 'dashboard' %}" class="nav-link {% if 'index' in segment %} active {% endif %}">
           {% endif %}
           <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
             <i class="ni ni-tv-2 text-primary text-sm opacity-10"></i>
           </div>
           <span class="nav-link-text ms-1">Dashboard</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link " href="{% url 'shelter' %}">
+          <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-building-check" viewBox="0 0 16 16">
+              <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m1.679-4.493-1.335 2.226a.75.75 0 0 1-1.174.144l-.774-.773a.5.5 0 0 1 .708-.708l.547.548 1.17-1.951a.5.5 0 1 1 .858.514"/>
+              <path d="M2 1a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6.5a.5.5 0 0 1-1 0V1H3v14h3v-2.5a.5.5 0 0 1 .5-.5H8v4H3a1 1 0 0 1-1-1z"/>
+              <path d="M4.5 2a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm3 0a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm3 0a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm-6 3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm3 0a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm3 0a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm-6 3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm3 0a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5z"/>
+            </svg>
+          </div>
+          <span class="nav-link-text ms-1">Shelter</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link " href="{% url 'shelter' %}">
+          <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+            <i class="ni ni-chart-pie-35 text-warning text-sm opacity-10"></i>
+          </div>
+          <span class="nav-link-text ms-1">Report</span>
         </a>
       </li>
 
@@ -117,16 +137,16 @@
   </div>
   <div class="sidenav-footer mx-3 ">
     <div class="card card-plain shadow-none" id="sidenavCard">
-      <img class="w-50 mx-auto" src="{% static 'img/illustrations/icon-documentation.svg' %}" alt="sidebar_illustration">
+      <!-- <img class="w-50 mx-auto" src="{% static 'img/illustrations/icon-documentation.svg' %}" alt="sidebar_illustration"> -->
       <div class="card-body text-center p-3 w-100 pt-0">
         <div class="docs-info">
-          <h6 class="mb-0">Need help?</h6>
-          <p class="text-xs font-weight-bold mb-0">Please check the links</p>
+          <!-- <h6 class="mb-0">Need help?</h6>
+          <p class="text-xs font-weight-bold mb-0">Please check the links</p> -->
         </div>
       </div>
     </div>
-    <a href="https://appseed.us/product/argon-dashboard/django/" target="_blank" class="btn btn-dark btn-sm w-100 mb-3">Download</a>
-    <a class="btn btn-primary btn-sm mb-0 w-100" href="https://appseed.us/product/argon-dashboard2-pro/django/" 
-       target="_blank" type="button">PRO Version</a>
+    <a href="https://appseed.us/product/argon-dashboard/django/" class="btn mt-5 btn-dark btn-sm w-100 mb-3">Add Waypoints</a>
+    <a class="btn btn-primary btn-sm mb-0 w-100" href="/" 
+        type="button">Logout</a>
   </div>
 </aside>
