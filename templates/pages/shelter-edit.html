@@ -1,0 +1,48 @@
+{% extends "layouts/base.html" %} {% load i18n static %} {% block title %} Edit
+Shelter {% endblock title %} {% block overlay %}
+<div class="min-height-300 bg-primary position-absolute w-100"></div>
+{% endblock overlay %} {% block content %}
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card card-plain">
+        <div class="card-header pb-0 text-start">
+          <form action="{% url 'update-shelter' shelter.id %}" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+              <label for="name">Nama Bangunan</label>
+              <input
+                type="text"
+                class="form-control"
+                id="name"
+                name="nama_bangunan"
+                value="{{ shelter.nama_bangunan }}"
+                placeholder="Nama Bangunan"
+              />
+              <label for="kordinat">Latitude Longitude</label>
+              <input
+                type="text"
+                class="form-control"
+                id="kordinat"
+                name="kordinat"
+                value="{{ shelter.latitude_longitude }}"
+                placeholder="Latitude Longitude"
+              />
+              <label for="alamat">Alamat</label>
+              <input
+                type="text"
+                class="form-control"
+                id="alamat"
+                name="alamat"
+                value="{{ shelter.alamat }}"
+                placeholder="Alamat"
+              />
+            </div>
+            <button type="submit" class="btn btn-primary">Update</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
