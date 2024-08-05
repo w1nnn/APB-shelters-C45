@@ -50,7 +50,7 @@ function init() {
   map.addLayer(baseLayerGroup); // Menambahkan kelompok layer ke peta
 
   // Event listener untuk mengganti layer ketika link diklik
-  const layerLinks = document.querySelectorAll(".navbar a");
+  const layerLinks = document.querySelectorAll(".progress-bar a");
   layerLinks.forEach((link) => {
     link.addEventListener("click", (event) => {
       event.preventDefault(); // Menghindari perilaku default link

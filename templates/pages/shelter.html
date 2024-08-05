@@ -1,6 +1,12 @@
 {% extends "layouts/base.html" %} {% load i18n static %} {% block title %} Home
 {% endblock title %} {% block overlay %}
-<div class="min-height-300 bg-primary position-absolute w-100"></div>
+<div
+  class="min-height-300 position-absolute w-100"
+  style="
+    background-color: #8bc6ec;
+    background-image: linear-gradient(135deg, #8bc6ec 0%, #9599e2 100%);
+  "
+></div>
 {% endblock overlay %} {% block content %}
 
 <div class="container-fluid py-4">
@@ -22,7 +28,7 @@
               <thead>
                 <tr>
                   <th
-                    class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
+                    class="text-uppercase align-middle text-center text-secondary text-xxs font-weight-bolder opacity-7"
                   >
                     Id
                   </th>
@@ -51,15 +57,17 @@
               </thead>
               <tbody>
                 {% for shelter in shelters %}
-                <tr>
-                  <td>{{ shelter.id }}</td>
+                <tr style="font-size: 12px">
+                  <td class="align-middle text-center">{{ shelter.id }}</td>
                   <td>{{ shelter.nama_bangunan }}</td>
-                  <td class="align-middle text-center text-sm">
+                  <td class="align-middle text-center">
                     {{ shelter.latitude_longitude }}
                   </td>
                   <td class="align-middle text-center">{{ shelter.alamat }}</td>
                   <td class="align-middle text-center">
-                    <span class="text-secondary text-xs font-weight-bold"
+                    <span
+                      style="width: 70px; font-size: 8px"
+                      class="badge badge-sm bg-gradient-success"
                       >Terverivikasi</span
                     >
                   </td>

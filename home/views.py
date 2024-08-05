@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib import messages
 from .models import Shelter
-
+from .models import User
 def index(request):
     return render(request, 'home.html')
 
@@ -17,11 +17,14 @@ def auth(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
 
-        if username == 'admin' and password == 'admin':
-            return redirect('/dashboard/')
+        user = User.objects.filter(username=username, password=password).first()
+        if user:
+            request.session['user'] = user.id
+            messages.error(request, 'Login berhasil')
+            return redirect('/dashboard')
         else:
-            messages.error(request, "Invalid username or password.")
-            return render(request, 'accounts/sign-in.html', {'error': "Invalid username or password."}) 
+            messages.error(request, 'Username atau password salah')
+            return redirect('/login')
 
 
 def shelter(request):
