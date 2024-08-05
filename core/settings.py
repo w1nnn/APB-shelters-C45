@@ -111,11 +111,15 @@ if DB_ENGINE and DB_NAME and DB_USERNAME:
     }
 else:
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': 'db.sqlite3',
-        }
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'db_shelters',
+        'USER': 'root',
+        'PASSWORD': '',
+        'HOST': 'localhost',  # Or IP address
+        'PORT': '3306',       # Default MySQL port
     }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
