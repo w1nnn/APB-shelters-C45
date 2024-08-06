@@ -34,12 +34,20 @@ def shelter(request):
 def shelter_add(request):
     return render(request, "pages/shelter-add.html")       
 
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Shelter
+
 def save_shelter(request):
     if request.method == 'POST':
         nama_bangunan = request.POST.get('nama_bangunan')
         latitude_longitude = request.POST.get('kordinat')
         alamat = request.POST.get('alamat')
         
+        if Shelter.objects.filter(latitude_longitude=latitude_longitude).exists():
+            messages.error(request, "Lokasi dengan koordinat ini sudah ada.")
+            return redirect('/shelter')
+
         Shelter.objects.create(
             nama_bangunan=nama_bangunan,
             latitude_longitude=latitude_longitude,
@@ -48,7 +56,7 @@ def save_shelter(request):
         messages.success(request, "Data berhasil disimpan.")
         return redirect('/shelter')
         
-    return render(request, 'page/shelter.html') 
+    return render(request, 'page/shelter.html')
 
 def delete_shelter(request, id):
     Shelter.objects.filter(id=id).delete()

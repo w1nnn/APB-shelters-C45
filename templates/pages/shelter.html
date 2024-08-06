@@ -57,21 +57,21 @@
               </thead>
               <tbody>
                 {% for shelter in shelters %}
-                <tr style="font-size: 12px">
+                <tr style="font-size: 14px">
                   <td class="align-middle text-center">{{ shelter.id }}</td>
                   <td>{{ shelter.nama_bangunan }}</td>
-                  <td class="align-middle text-center">
+                  <td class="align-middle text-center" style="color: blue">
                     {{ shelter.latitude_longitude }}
                   </td>
                   <td class="align-middle text-center">{{ shelter.alamat }}</td>
                   <td class="align-middle text-center">
                     <span
-                      style="width: 70px; font-size: 8px"
+                      style="width: 100px; font-size: 10px"
                       class="badge badge-sm bg-gradient-success"
                       >Terverivikasi</span
                     >
                   </td>
-                  <td class="align-middle">
+                  <td class="align-middle" style="font-size: 13px">
                     <a
                       href="{% url 'edit-shelter' shelter.id %}"
                       class="text-secondary font-weight-bold text-xs mx-2"

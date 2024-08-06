@@ -6,7 +6,10 @@ Shelter {% endblock title %} {% block overlay %}
   <div class="row">
     <div class="col-12">
       <div class="card card-plain">
-        <div class="card-header pb-0 text-start">
+        <div
+          class="card-header pb-0 text-start"
+          style="box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.1)"
+        >
           <form action="{% url 'update-shelter' shelter.id %}" method="post">
             {% csrf_token %}
             <div class="form-group">
@@ -18,6 +21,8 @@ Shelter {% endblock title %} {% block overlay %}
                 name="nama_bangunan"
                 value="{{ shelter.nama_bangunan }}"
                 placeholder="Nama Bangunan"
+                maxlength="255"
+                autocomplete="off"
               />
               <label for="kordinat">Latitude Longitude</label>
               <input
@@ -27,6 +32,8 @@ Shelter {% endblock title %} {% block overlay %}
                 name="kordinat"
                 value="{{ shelter.latitude_longitude }}"
                 placeholder="Latitude Longitude"
+                maxlength="255"
+                autocomplete="off"
               />
               <label for="alamat">Alamat</label>
               <input
@@ -36,9 +43,12 @@ Shelter {% endblock title %} {% block overlay %}
                 name="alamat"
                 value="{{ shelter.alamat }}"
                 placeholder="Alamat"
+                maxlength="255"
+                autocomplete="off"
               />
             </div>
             <button type="submit" class="btn btn-primary">Update</button>
+            <a href="/shelter" class="btn btn-warning">Batal</a>
           </form>
         </div>
       </div>
