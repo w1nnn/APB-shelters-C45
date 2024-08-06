@@ -1,7 +1,13 @@
-{% extends "layouts/base.html" %} {% load i18n static %} {% block title %} Edit
-Shelter {% endblock title %} {% block overlay %}
-<div class="min-height-300 bg-primary position-absolute w-100"></div>
-{% endblock overlay %} {% block content %}
+{% extends "layouts/base.html" %}
+{% load i18n static %}
+{% block title %} Edit Shelter {% endblock title %}
+{% block overlay %}
+<div class="min-height-300 position-absolute w-100" style="
+background-color: #8bc6ec;
+background-image: linear-gradient(135deg, #8bc6ec 0%, #9599e2 100%);
+"></div>
+{% endblock overlay %}
+{% block content %}
 <div class="container-fluid py-4">
   <div class="row">
     <div class="col-12">
@@ -12,7 +18,9 @@ Shelter {% endblock title %} {% block overlay %}
         >
           <form action="{% url 'update-shelter' shelter.id %}" method="post">
             {% csrf_token %}
-            <div class="form-group">
+
+            <!-- Nama Bangunan -->
+            <div class="form-group mb-3">
               <label for="name">Nama Bangunan</label>
               <input
                 type="text"
@@ -24,6 +32,10 @@ Shelter {% endblock title %} {% block overlay %}
                 maxlength="255"
                 autocomplete="off"
               />
+            </div>
+
+            <!-- Latitude Longitude -->
+            <div class="form-group mb-3">
               <label for="kordinat">Latitude Longitude</label>
               <input
                 type="text"
@@ -35,6 +47,10 @@ Shelter {% endblock title %} {% block overlay %}
                 maxlength="255"
                 autocomplete="off"
               />
+            </div>
+
+            <!-- Alamat -->
+            <div class="form-group mb-3">
               <label for="alamat">Alamat</label>
               <input
                 type="text"
@@ -47,6 +63,57 @@ Shelter {% endblock title %} {% block overlay %}
                 autocomplete="off"
               />
             </div>
+
+            <!-- Dropdown untuk  ATAP -->
+            <div class="form-group mb-3">
+              <label for="nama_kriteria_atap" class="form-label">Nama Kriteria ATAP</label>
+              <select id="nama_kriteria_atap" name="atap" class="form-select">
+                <option value="">Pilih</option>
+                {% for kriteria in kriteria_atap %}
+                  <option value="{{ kriteria.sub_kriteria }}" {% if shelter.atap == kriteria.sub_kriteria %}selected{% endif %}>
+                    {{ kriteria.sub_kriteria }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+
+            <!-- Dropdown untuk RANGKA ATAP -->
+            <div class="form-group mb-3">
+              <label for="nama_kriteria_rangka_atap" class="form-label">Nama Kriteria RANGKA ATAP</label>
+              <select id="nama_kriteria_rangka_atap" name="rangka_atap" class="form-select">
+                <option value="">Pilih</option>
+                {% for kriteria in kriteria_rangka_atap %}
+                  <option value="{{ kriteria.sub_kriteria }}" {% if shelter.rangka_atap == kriteria.sub_kriteria %}selected{% endif %}>
+                    {{ kriteria.sub_kriteria }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Dropdown untuk KOLOM BANGUNAN -->
+            <div class="form-group mb-3">
+              <label for="nama_kriteria_kolom_bangunan" class="form-label">Nama Kriteria KOLOM BANGUNAN</label>
+              <select id="nama_kriteria_kolom_bangunan" name="kolom_bangunan" class="form-select">
+                <option value="">Pilih</option>
+                {% for kriteria in kriteria_kolom_bangunan %}
+                  <option value="{{ kriteria.sub_kriteria }}" {% if shelter.kolom_bangunan == kriteria.sub_kriteria %}selected{% endif %}>
+                    {{ kriteria.sub_kriteria }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Status -->
+            <div class="form-group mb-3">
+              <label for="secure">Status</label>
+              <select id="secure" name="status" class="form-select">
+                <option value="">Pilih</option>
+                <option value="Secure" {% if shelter.status == "Secure" %}selected{% endif %}>Aman</option>
+                <option value="Un-Secure" {% if shelter.status == "Un-Secure" %}selected{% endif %}>Tidak Aman</option>
+              </select>
+            </div>
+
             <button type="submit" class="btn btn-primary">Update</button>
             <a href="/shelter" class="btn btn-warning">Batal</a>
           </form>

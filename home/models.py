@@ -26,10 +26,27 @@ class Shelter(models.Model):
     nama_bangunan = models.CharField(max_length=255)
     latitude_longitude = models.CharField(max_length=255)
     alamat = models.CharField(max_length=255)
-
+    atap = models.CharField(max_length=50, default='default_atap')
+    rangka_atap = models.CharField(max_length=50, default='default_rangka_atap')
+    kolom_bangunan = models.CharField(max_length=50, default='default_kolom_bangunan')
+    status = models.CharField(max_length=50, default='default_status')
+    
     def __str__(self):
         return self.nama_bangunan
 
     class Meta:
         verbose_name = "Shelter"
         verbose_name_plural = "Shelters"
+
+class Kriteria(models.Model):
+    id = models.AutoField(primary_key=True)
+    nama_kriteria = models.CharField(max_length=50, default='Default Kriteria')
+    sub_kriteria = models.CharField(max_length=50, default='Default Sub Kriteria')
+    bobot = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f'{self.nama_kriteria} - {self.sub_kriteria}'
+
+    class Meta:
+        verbose_name = "Kriteria"
+        verbose_name_plural = "Kriteria"

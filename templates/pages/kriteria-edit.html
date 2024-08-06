@@ -1,0 +1,68 @@
+{% extends "layouts/base.html" %}
+{% load i18n static %}
+{% block title %} Edit Shelter {% endblock title %}
+{% block overlay %}
+<div class="min-height-300 position-absolute w-100" style="
+background-color: #8bc6ec;
+background-image: linear-gradient(135deg, #8bc6ec 0%, #9599e2 100%);
+"></div>
+{% endblock overlay %}
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card card-plain">
+        <div
+          class="card-header pb-0 text-start"
+          style="box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.1)"
+        >
+          <form action="{% url 'update-kriteria' kriteria.id %}" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+              <div class="mb-3">
+                <label for="nama_kriteria" class="form-label">Nama Kriteria</label>
+                <select id="nama_kriteria" name="nama_kriteria" class="form-select">
+                  <option value="">Pilih</option>
+                  <option value="ATAP" {% if kriteria.nama_kriteria == "ATAP" %}selected{% endif %}>Atap</option>
+                  <option value="RANGKA ATAP" {% if kriteria.nama_kriteria == "RANGKA ATAP" %}selected{% endif %}>Rangka Atap</option>
+                  <option value="KOLOM BANGUNAN" {% if kriteria.nama_kriteria == "KOLOM BANGUNAN" %}selected{% endif %}>Kolom Bangunan</option>
+                </select>
+              </div>
+
+              <!-- Input Sub Kriteria -->
+              <div class="mb-3">
+                <label for="sub_kriteria" class="form-label">Sub Kriteria</label>
+                <input
+                  type="text"
+                  name="sub_kriteria"
+                  id="sub_kriteria"
+                  class="form-control mb-3"
+                  placeholder="Sub Kriteria"
+                  value="{{ kriteria.sub_kriteria }}"
+                  autocapitalize="on"
+                />
+              </div>
+
+              <!-- Input untuk Bobot -->
+              <div class="mb-3">
+                <label for="bobot" class="form-label">Bobot</label>
+                <input
+                  type="number"
+                  name="bobot"
+                  id="bobot"
+                  class="form-control mb-3"
+                  placeholder="Bobot"
+                  value="{{ kriteria.bobot }}"
+                />
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Simpan</button>
+            <a href="/kriteria" class="btn btn-warning">Batal</a>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
