@@ -5,17 +5,16 @@ from .models import Shelter
 from .models import User
 from .models import Kriteria
 # D3
-from sklearn import metrics
-from sklearn.tree import DecisionTreeClassifier
-from sklearn import tree
-from django.conf import settings
 import pandas as pd
+from sklearn.tree import DecisionTreeClassifier
 import matplotlib.pyplot as plt
+from sklearn import metrics
+from sklearn import tree
 import numpy as np
 import io
 import base64
+from django.conf import settings
 import os
-
 # main
 def index(request):
     return render(request, 'home.html')
@@ -121,6 +120,7 @@ def update_shelter(request, id):
     shelter = get_object_or_404(Shelter, id=id)
 
     if request.method == 'POST':
+        # Ambil data dari form
         shelter.nama_bangunan = request.POST.get('nama_bangunan')
         shelter.latitude_longitude = request.POST.get('kordinat')
         shelter.alamat = request.POST.get('alamat')
@@ -128,11 +128,13 @@ def update_shelter(request, id):
         shelter.kolom_bangunan = request.POST.get('kolom_bangunan')
         shelter.status = request.POST.get('status')
 
+        # Simpan perubahan ke database
         shelter.save()
 
         messages.success(request, "Data berhasil diubah.")
         return redirect('/shelter')  # Ganti dengan nama URL yang sesuai
 
+    # Jika metode request bukan POST, render halaman edit dengan data yang ada
     context = {
         'shelter': shelter,
         'kriteria_rangka_atap': Kriteria.objects.filter(nama_kriteria='RANGKA ATAP'),
@@ -195,10 +197,6 @@ def update_kriteria(request, id):
 # Decision Tree
 def analyze_data(request):
     try:
-        # Set backend non-GUI untuk Matplotlib
-        import matplotlib
-        matplotlib.use('Agg')
-        
         # Load data
         training_file_path = os.path.join(settings.BASE_DIR, 'static/data/data_traning.xlsx')
         testing_file_path = os.path.join(settings.BASE_DIR, 'static/data/data_testing.xlsx')

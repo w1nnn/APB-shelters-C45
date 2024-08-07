@@ -1,5 +1,4 @@
 from django.urls import path
-# from .views import shelter_list
 from . import views
 
 urlpatterns = [
@@ -22,6 +21,8 @@ urlpatterns = [
     path("delete-kriteria/<int:id>/", views.delete_kriteria, name="delete-kriteria"),
     path("edit-kriteria/<int:id>/", views.edit_kriteria, name="edit-kriteria"),
     path("update-kriteria/<int:id>/", views.update_kriteria, name="update-kriteria"),
+    
+    path('analyze/', views.analyze_data, name='analyze_data'),
 ]
 
 
