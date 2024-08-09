@@ -50,3 +50,18 @@ class Kriteria(models.Model):
     class Meta:
         verbose_name = "Kriteria"
         verbose_name_plural = "Kriteria"
+
+# Tabel Train isinya aatap, rangka_atap, kolom_bangunan, status
+class Train(models.Model):
+    id = models.AutoField(primary_key=True)
+    atap = models.CharField(max_length=50)
+    rangka_atap = models.CharField(max_length=50)
+    kolom_bangunan = models.CharField(max_length=50)
+    decision = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.decision
+
+    class Meta:
+        verbose_name = "Train"
+        verbose_name_plural = "Trains"

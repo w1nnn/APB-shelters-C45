@@ -480,7 +480,6 @@
       <div id="jsmap" class="map"></div>
     </div>
     <div id="info"></div>
-    <div id="shelter-info" style="display: none"></div>
     <div class="floating-buttons">
       <button class="floating-button" id="recommend-shelter">
         Rekomendasi Shelter
@@ -671,12 +670,12 @@
           });
         });
 
-        // Add markers and store shelter coordinates
+        // Event listener for recommending shelter
         const btnRecomended = document.querySelector("#recommend-shelter");
-        const shelterFeatures = [];
-        const shelterCoordinates = [];
         btnRecomended.addEventListener("click", () => {
           const shelters = document.querySelectorAll('input[id^="data"]');
+          const shelterCoordinates = [];
+
           shelters.forEach((input) => {
             let allShelters = input.value.split(",");
             let latitude = parseFloat(allShelters[0]);
@@ -709,168 +708,163 @@
             });
 
             map.addLayer(vectorLayer);
-
-            // Add feature and coordinates
-            shelterFeatures.push(iconFeature);
-            shelterCoordinates.push([longitude, latitude]);
+            shelterCoordinates.push([longitude, latitude]); // Store shelter coordinates for routing
           });
-        });
 
-        // Add current location marker
-        const currentLocation = document.querySelector("#current-location");
-        let allCurrentLocation = currentLocation.value;
-        const regex = /^\['(.*?)'\]$/;
-        const data = allCurrentLocation.replace(regex, "$1").split(",");
-        let currentLat = parseFloat(data[0]);
-        let currentLon = parseFloat(data[1]);
+          // Get current location and add marker to the map
+          const currentLocation = document.querySelector("#current-location");
+          let allCurrentLocation = currentLocation.value;
+          const regex = /^\['(.*?)'\]$/;
+          const data = allCurrentLocation.replace(regex, "$1").split(",");
+          let currentLat = parseFloat(data[0]);
+          let currentLon = parseFloat(data[1]);
 
-        const currentLocationFeature = new ol.Feature({
-          geometry: new ol.geom.Point(
-            ol.proj.fromLonLat([currentLon, currentLat])
-          ),
-        });
+          const currentLocationFeature = new ol.Feature({
+            geometry: new ol.geom.Point(
+              ol.proj.fromLonLat([currentLon, currentLat])
+            ),
+          });
 
-        const currentLocationStyle = new ol.style.Style({
-          image: new ol.style.Icon({
-            anchor: [0.5, 46],
-            anchorXUnits: "fraction",
-            anchorYUnits: "pixels",
-            src: "{% static 'img/gps.png' %}",
-          }),
-        });
-
-        map.addLayer(
-          new ol.layer.Vector({
-            source: new ol.source.Vector({
-              features: [currentLocationFeature],
+          const currentLocationStyle = new ol.style.Style({
+            image: new ol.style.Icon({
+              anchor: [0.5, 46],
+              anchorXUnits: "fraction",
+              anchorYUnits: "pixels",
+              src: "{% static 'img/gps.png' %}",
             }),
-            style: currentLocationStyle,
-          })
-        );
-
-        // Add click event for shelter markers
-        const selectShelterOverlay = new ol.Overlay({
-          element: document.getElementById("shelter-info"),
-          offset: [0, -30],
-          positioning: "bottom-center",
-        });
-        map.addOverlay(selectShelterOverlay);
-
-        map.on("click", function (event) {
-          map.forEachFeatureAtPixel(event.pixel, (feature) => {
-            if (shelterFeatures.includes(feature)) {
-              const shelterCoordinate = ol.proj.toLonLat(
-                feature.getGeometry().getCoordinates()
-              );
-              const [shelterLon, shelterLat] = shelterCoordinate;
-
-              // Update the overlay to show information about the selected shelter
-              const shelterInfo = `Shelter Location: ${shelterLat.toFixed(
-                6
-              )}, ${shelterLon.toFixed(6)}`;
-              document.getElementById("shelter-info").innerHTML = shelterInfo;
-              selectShelterOverlay.setPosition(event.coordinate);
-
-              // Set up route calculation to the selected shelter
-              calculateRoute(
-                [currentLon, currentLat],
-                [shelterLon, shelterLat]
-              );
-            }
           });
-        });
 
-        function calculateRoute(start, end) {
-          const routeData = {
-            coordinates: [start, end],
-          };
+          map.addLayer(
+            new ol.layer.Vector({
+              source: new ol.source.Vector({
+                features: [currentLocationFeature],
+              }),
+              style: currentLocationStyle,
+            })
+          );
 
-          const getPathUrl = (routeType) => {
-            const pathParams = {
-              walking: "foot-hiking",
-              driving: "driving-car",
-              cycling: "cycling-regular",
+          // Calculate route if there are shelters available
+          if (shelterCoordinates.length > 0) {
+            const destination = shelterCoordinates[0]; // Use the first shelter for demonstration
+            const routeData = {
+              coordinates: [
+                [currentLon, currentLat], // Current location
+                destination, // Destination
+              ],
             };
-            return `https://api.openrouteservice.org/v2/directions/${pathParams[routeType]}`;
-          };
 
-          const headers = {
-            Accept:
-              "application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8",
-            "Content-Type": "application/json",
-            Authorization:
-              "5b3ce3597851110001cf6248e515b644174f4b1d9b5e9767e8b4c611",
-          };
+            const getPathUrl = (routeType) => {
+              const pathParams = {
+                walking: "foot-hiking",
+                driving: "driving-car",
+                cycling: "cycling-regular",
+              };
+              return `https://api.openrouteservice.org/v2/directions/${pathParams[routeType]}`;
+            };
 
-          const url = getPathUrl("walking");
+            const headers = {
+              Accept:
+                "application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8",
+              "Content-Type": "application/json",
+              Authorization:
+                "5b3ce3597851110001cf6248e515b644174f4b1d9b5e9767e8b4c611",
+            };
 
-          fetch(url, {
-            method: "POST",
-            headers: headers,
-            body: JSON.stringify(routeData),
-          })
-            .then((response) => {
-              if (!response.ok) {
-                throw new Error(
-                  "Network response was not ok " + response.statusText
-                );
-              }
-              return response.json();
+            const url = getPathUrl("walking");
+
+            fetch(url, {
+              method: "POST",
+              headers: headers,
+              body: JSON.stringify(routeData),
             })
-            .then((data) => {
-              const geometry = data.routes[0].geometry;
-              const route = new ol.geom.LineString(
-                decodePolyline(geometry).map((coord) =>
-                  ol.proj.fromLonLat(coord)
-                )
-              );
-
-              const routeStyle = new ol.style.Style({
-                stroke: new ol.style.Stroke({
-                  color: "blue",
-                  width: 5,
-                }),
-              });
-
-              const routeFeature = new ol.Feature({
-                geometry: route,
-              });
-
-              routeFeature.setProperties({
-                distance: data.routes[0].summary.distance,
-                duration: data.routes[0].summary.duration / 60,
-              });
-
-              routeFeature.setStyle(routeStyle);
-
-              // Remove existing route layer if any
-              map.getLayers().forEach((layer) => {
-                if (
-                  layer instanceof ol.layer.Vector &&
-                  layer
-                    .getSource()
-                    .getFeatures()
-                    .some((f) => f.getGeometry() instanceof ol.geom.LineString)
-                ) {
-                  map.removeLayer(layer);
+              .then((response) => {
+                if (!response.ok) {
+                  throw new Error(
+                    "Network response was not ok " + response.statusText
+                  );
                 }
-              });
+                return response.json();
+              })
+              .then((data) => {
+                const geometry = data.routes[0].geometry;
+                const route = new ol.geom.LineString(
+                  decodePolyline(geometry).map((coord) =>
+                    ol.proj.fromLonLat(coord)
+                  )
+                );
 
-              map.addLayer(
-                new ol.layer.Vector({
-                  source: new ol.source.Vector({
-                    features: [routeFeature],
+                const routeStyle = new ol.style.Style({
+                  stroke: new ol.style.Stroke({
+                    color: "blue",
+                    width: 5,
                   }),
-                })
-              );
-            })
-            .catch((error) => {
-              console.error("Error:", error);
-            });
-        }
+                });
+
+                const routeFeature = new ol.Feature({
+                  geometry: route,
+                });
+
+                routeFeature.setProperties({
+                  distance: data.routes[0].summary.distance,
+                  duration: data.routes[0].summary.duration / 60,
+                });
+
+                routeFeature.setStyle(routeStyle);
+
+                map.addLayer(
+                  new ol.layer.Vector({
+                    source: new ol.source.Vector({
+                      features: [routeFeature],
+                    }),
+                  })
+                );
+
+                // Display distance and duration on mouse hover
+                map.on("pointermove", function (event) {
+                  const features = map.getFeaturesAtPixel(event.pixel);
+                  let info = document.getElementById("info");
+                  if (features.length > 0) {
+                    let distance = features[0].getProperties().distance;
+                    let duration = features[0].getProperties().duration;
+                    info.innerHTML =
+                      "Distance: " +
+                      distance.toFixed(2) +
+                      " meters<br>" +
+                      "Duration: " +
+                      duration.toFixed(2) +
+                      " minutes";
+                  } else {
+                    info.innerHTML = "&nbsp;";
+                  }
+                });
+
+                // Add marker at current location and destination
+                const marker = new ol.Overlay({
+                  position: ol.proj.fromLonLat([currentLon, currentLat]),
+                  positioning: "center-center",
+                  element: document.getElementById("marker"),
+                  stopEvent: false,
+                  className: "marker",
+                });
+                map.addOverlay(marker);
+
+                const marker2 = new ol.Overlay({
+                  position: ol.proj.fromLonLat(destination),
+                  positioning: "center-center",
+                  element: document.createElement("img"),
+                  stopEvent: false,
+                });
+                marker2.getElement().src = "{% static 'img/location.png' %}";
+                map.addOverlay(marker2);
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+              });
+          }
+        });
 
         // Function to decode polyline
-        function decodePolyline(encoded) {
+        const decodePolyline = (encoded) => {
           const len = encoded.length;
           let index = 0;
           let lat = 0;
@@ -907,36 +901,7 @@
           }
 
           return points;
-        }
-
-        // Info
-        map.on("pointermove", function (event) {
-          if (event.dragging) {
-            return;
-          }
-
-          const pixel = map.getEventPixel(event.originalEvent);
-          const features = map.getFeaturesAtPixel(pixel);
-
-          let info = document.getElementById("info");
-          if (info) {
-            info.innerHTML = "&nbsp;";
-          }
-
-          if (features.length > 0) {
-            const feature = features[0];
-            if (feature.getGeometry() instanceof ol.geom.LineString) {
-              const distance = feature.getProperties().distance;
-              const duration = feature.getProperties().duration;
-
-              if (info) {
-                info.innerHTML =
-                  `Distance: ${distance.toFixed(2)} meters<br>` +
-                  `Duration: ${duration.toFixed(2)} minutes`;
-              }
-            }
-          }
-        });
+        };
 
         // Toast message functionality
         const toast = document.querySelector(".toast");

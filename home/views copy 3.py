@@ -206,10 +206,6 @@ def analyze_data(request):
         if df.empty:
             raise ValueError("No training data available")
 
-        # ambil data dari tebel kriteria dimana nama kriterianya = ATAP
-        # kriteria_atap = Kriteria.objects.filter(nama_kriteria='ATAP')
-        # kriteria_rangka_atap = Kriteria.objects.filter(nama_kriteria='RANGKA ATAP')
-        # kriteria_kolom_bangunan = Kriteria.objects.filter(nama_kriteria='KOLOM BANGUNAN')
         # Map categorical values to numeric values
         atap_mapping = {'Seng': 1, 'Asbes': 2, 'Genteng': 3, 'Cor': 4}
         rangka_atap_mapping = {'Kayu': 1, 'Baja ringan': 1, 'Besi': 2, 'Beton': 3}
@@ -262,12 +258,11 @@ def analyze_data(request):
                 'rangka_atap': [rangka_atap_value],
                 'kolom_bangunan': [kolom_bangunan_value]
             })
-            print(test_data)
+
             # Predict
             hasilPrediksi = dtree.predict(test_data)
-            hasilPrediksi_label = 'Secure' if hasilPrediksi[0] == [1] else 'Un-Secure'
-            print(hasilPrediksi)
-            print(hasilPrediksi_label)
+            hasilPrediksi_label = 'Secure' if hasilPrediksi[0] == 1 else 'Un-Secure'
+
             # Prepare context
             context = {
                 'image_base64': image_base64,
@@ -276,7 +271,6 @@ def analyze_data(request):
                 'latitude_longitude': latitude_longitude,
                 'shelters': Shelter.objects.all()
             }
-            messages.success(request, f"Prediction: {hasilPrediksi_label}")
             return render(request, 'home.html', context)
 
         return HttpResponse("Invalid request method", status=400)

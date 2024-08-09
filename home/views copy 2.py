@@ -6,7 +6,7 @@ from .models import User
 from .models import Kriteria
 # D3
 from sklearn import metrics
-from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.tree import DecisionTreeClassifier
 from sklearn import tree
 from django.conf import settings
 import pandas as pd
@@ -15,11 +15,10 @@ import numpy as np
 import io
 import base64
 import os
-from .models import Train
+
 # main
 def index(request):
-    shelters = Shelter.objects.all()
-    return render(request, 'home.html', {'shelters': shelters})
+    return render(request, 'home.html')
 
 def dashboard(request):
     kriteria_count = Kriteria.objects.count()
@@ -196,93 +195,79 @@ def update_kriteria(request, id):
 # Decision Tree
 def analyze_data(request):
     try:
+        # Set backend non-GUI untuk Matplotlib
         import matplotlib
         matplotlib.use('Agg')
-
-        # Gunakan Data training dari model Train
-        training_data = Train.objects.all()
-        df = pd.DataFrame(list(training_data.values('atap', 'rangka_atap', 'kolom_bangunan', 'decision')))
         
-        if df.empty:
-            raise ValueError("No training data available")
+        # Load data
+        training_file_path = os.path.join(settings.BASE_DIR, 'static/data/data_traning.xlsx')
+        testing_file_path = os.path.join(settings.BASE_DIR, 'static/data/data_testing.xlsx')
 
-        # ambil data dari tebel kriteria dimana nama kriterianya = ATAP
-        # kriteria_atap = Kriteria.objects.filter(nama_kriteria='ATAP')
-        # kriteria_rangka_atap = Kriteria.objects.filter(nama_kriteria='RANGKA ATAP')
-        # kriteria_kolom_bangunan = Kriteria.objects.filter(nama_kriteria='KOLOM BANGUNAN')
-        # Map categorical values to numeric values
+        # Check if files exist
+        if not os.path.exists(training_file_path):
+            raise FileNotFoundError(f"Training file not found: {training_file_path}")
+        if not os.path.exists(testing_file_path):
+            raise FileNotFoundError(f"Testing file not found: {testing_file_path}")
+
+        # Read Excel files
+        df = pd.read_excel(training_file_path, engine='openpyxl')
+        dt = pd.read_excel(testing_file_path, engine='openpyxl')
+
+        # Map categorical values
         atap_mapping = {'Seng': 1, 'Asbes': 2, 'Genteng': 3, 'Cor': 4}
+        df['ATAP'] = df['ATAP'].map(atap_mapping).fillna(0)
+        dt['ATAP'] = dt['ATAP'].map(atap_mapping).fillna(0)
+
         rangka_atap_mapping = {'Kayu': 1, 'Baja ringan': 1, 'Besi': 2, 'Beton': 3}
+        df['RANGKA ATAP'] = df['RANGKA ATAP'].map(rangka_atap_mapping).fillna(0)
+        dt['RANGKA ATAP'] = dt['RANGKA ATAP'].map(rangka_atap_mapping).fillna(0)
+
         kolom_bangunan_mapping = {'Kayu': 1, 'Baja ringan': 1, 'Besi': 2, 'Beton berulang': 3}
+        df['KOLOM BANGUNAN'] = df['KOLOM BANGUNAN'].map(kolom_bangunan_mapping).fillna(0)
+        dt['KOLOM BANGUNAN'] = dt['KOLOM BANGUNAN'].map(kolom_bangunan_mapping).fillna(0)
+
         decision_mapping = {'Secure': 1, 'Un-Secure': 0}
+        df['DECISION'] = df['DECISION'].map(decision_mapping)
+        dt['DECISION'] = dt['DECISION'].map(decision_mapping)
 
-        # Mapping for training data
-        df['atap'] = df['atap'].map(atap_mapping).fillna(0)
-        df['rangka_atap'] = df['rangka_atap'].map(rangka_atap_mapping).fillna(0)
-        df['kolom_bangunan'] = df['kolom_bangunan'].map(kolom_bangunan_mapping).fillna(0)
-        df['decision'] = df['decision'].map(decision_mapping)
-
-        # Define features and target for training
-        features = ['atap', 'rangka_atap', 'kolom_bangunan']
+        features = ['ATAP', 'RANGKA ATAP', 'KOLOM BANGUNAN']
         xTrain = df[features]
-        yTrain = df['decision']
+        yTrain = df['DECISION']
 
         # Train Decision Tree model
         dtree = DecisionTreeClassifier()
-        dtree.fit(xTrain, yTrain)
+        dtree = dtree.fit(xTrain, yTrain)
 
-        # Visualize Decision Tree
-        plt.figure(figsize=(20, 20), facecolor='none')  # Set facecolor to 'none'
-        plot_tree(dtree, feature_names=features, class_names=['Un-Secure', 'Secure'], filled=True)
-        
+        # Accuracy calculation
+        xTesting = dt[features]
+        yTesting = dt['DECISION']
+
+        hasilPrediksi = dtree.predict(xTesting)
+        hasilPrediksi_label = ['Secure' if pred == 1 else 'Un-Secure' for pred in hasilPrediksi]
+
+        accuracy = metrics.accuracy_score(yTesting, hasilPrediksi)
+
+        # Generate the decision tree plot
+        plt.figure(figsize=(20,20), facecolor='w')
+        tree.plot_tree(dtree, feature_names=features)
+
         # Save plot to a BytesIO object
         buf = io.BytesIO()
-        plt.savefig(buf, format='png', bbox_inches='tight', transparent=True)  # Set transparent to True
+        plt.savefig(buf, format='png')
         buf.seek(0)
         plt.close()
 
         # Encode the plot to base64
         image_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')
 
-        if request.method == 'POST':
-            # Retrieve data from the form
-            atap = request.POST.get('atap', '')
-            rangka_atap = request.POST.get('rangka_atap', '')
-            kolom_bangunan = request.POST.get('kolom_bangunan', '')
-            latitude_longitude = request.POST.get('latitude_longitude', '')
+        # Prepare context
+        context = {
+            'image_base64': image_base64,
+            'accuracy': accuracy,
+            'predictions': hasilPrediksi_label,
+        }
 
-            # Map form values to numeric values
-            atap_value = atap_mapping.get(atap.capitalize(), 0)
-            rangka_atap_value = rangka_atap_mapping.get(rangka_atap.replace('_', ' ').capitalize(), 0)
-            kolom_bangunan_value = kolom_bangunan_mapping.get(kolom_bangunan.replace('_', ' ').capitalize(), 0)
-
-            # Create DataFrame for testing data
-            test_data = pd.DataFrame({
-                'atap': [atap_value],
-                'rangka_atap': [rangka_atap_value],
-                'kolom_bangunan': [kolom_bangunan_value]
-            })
-            print(test_data)
-            # Predict
-            hasilPrediksi = dtree.predict(test_data)
-            hasilPrediksi_label = 'Secure' if hasilPrediksi[0] == [1] else 'Un-Secure'
-            print(hasilPrediksi)
-            print(hasilPrediksi_label)
-            # Prepare context
-            context = {
-                'image_base64': image_base64,
-                'prediction': hasilPrediksi_label,
-                'testing_data': test_data.to_html(),
-                'latitude_longitude': latitude_longitude,
-                'shelters': Shelter.objects.all()
-            }
-            messages.success(request, f"Prediction: {hasilPrediksi_label}")
-            return render(request, 'home.html', context)
-
-        return HttpResponse("Invalid request method", status=400)
-
+        return render(request, 'analyze.html', context)
+    
     except Exception as e:
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.error(f"An error occurred: {str(e)}")
         return HttpResponse(f"An error occurred: {str(e)}", status=500)

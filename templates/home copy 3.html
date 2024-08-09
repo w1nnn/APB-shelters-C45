@@ -672,48 +672,46 @@
         });
 
         // Add markers and store shelter coordinates
-        const btnRecomended = document.querySelector("#recommend-shelter");
-        const shelterFeatures = [];
         const shelterCoordinates = [];
-        btnRecomended.addEventListener("click", () => {
-          const shelters = document.querySelectorAll('input[id^="data"]');
-          shelters.forEach((input) => {
-            let allShelters = input.value.split(",");
-            let latitude = parseFloat(allShelters[0]);
-            let longitude = parseFloat(allShelters[1]);
+        const shelterFeatures = [];
+        const shelters = document.querySelectorAll('input[id^="data"]');
 
-            // Add shelter markers to the map
-            const iconFeature = new ol.Feature({
-              geometry: new ol.geom.Point(
-                ol.proj.fromLonLat([longitude, latitude])
-              ),
-            });
+        shelters.forEach((input) => {
+          let allShelters = input.value.split(",");
+          let latitude = parseFloat(allShelters[0]);
+          let longitude = parseFloat(allShelters[1]);
 
-            const iconStyle = new ol.style.Style({
-              image: new ol.style.Icon({
-                anchor: [0.5, 46],
-                anchorXUnits: "fraction",
-                anchorYUnits: "pixels",
-                src: "{% static 'img/location.png' %}",
-              }),
-            });
-
-            iconFeature.setStyle(iconStyle);
-
-            const vectorSource = new ol.source.Vector({
-              features: [iconFeature],
-            });
-
-            const vectorLayer = new ol.layer.Vector({
-              source: vectorSource,
-            });
-
-            map.addLayer(vectorLayer);
-
-            // Add feature and coordinates
-            shelterFeatures.push(iconFeature);
-            shelterCoordinates.push([longitude, latitude]);
+          // Add shelter markers to the map
+          const iconFeature = new ol.Feature({
+            geometry: new ol.geom.Point(
+              ol.proj.fromLonLat([longitude, latitude])
+            ),
           });
+
+          const iconStyle = new ol.style.Style({
+            image: new ol.style.Icon({
+              anchor: [0.5, 46],
+              anchorXUnits: "fraction",
+              anchorYUnits: "pixels",
+              src: "{% static 'img/location.png' %}",
+            }),
+          });
+
+          iconFeature.setStyle(iconStyle);
+
+          const vectorSource = new ol.source.Vector({
+            features: [iconFeature],
+          });
+
+          const vectorLayer = new ol.layer.Vector({
+            source: vectorSource,
+          });
+
+          map.addLayer(vectorLayer);
+
+          // Add feature and coordinates
+          shelterFeatures.push(iconFeature);
+          shelterCoordinates.push([longitude, latitude]);
         });
 
         // Add current location marker
@@ -908,35 +906,6 @@
 
           return points;
         }
-
-        // Info
-        map.on("pointermove", function (event) {
-          if (event.dragging) {
-            return;
-          }
-
-          const pixel = map.getEventPixel(event.originalEvent);
-          const features = map.getFeaturesAtPixel(pixel);
-
-          let info = document.getElementById("info");
-          if (info) {
-            info.innerHTML = "&nbsp;";
-          }
-
-          if (features.length > 0) {
-            const feature = features[0];
-            if (feature.getGeometry() instanceof ol.geom.LineString) {
-              const distance = feature.getProperties().distance;
-              const duration = feature.getProperties().duration;
-
-              if (info) {
-                info.innerHTML =
-                  `Distance: ${distance.toFixed(2)} meters<br>` +
-                  `Duration: ${duration.toFixed(2)} minutes`;
-              }
-            }
-          }
-        });
 
         // Toast message functionality
         const toast = document.querySelector(".toast");
