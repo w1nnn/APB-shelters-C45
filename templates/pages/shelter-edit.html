@@ -106,13 +106,7 @@ background-image: linear-gradient(135deg, #8bc6ec 0%, #9599e2 100%);
 
             <!-- Status -->
             <div class="form-group mb-3">
-              <label for="secure">Status</label>
-              <select id="secure" name="status" class="form-select">
-                <option value="">Pilih</option>
-                <option value="Secure" {% if shelter.status == "Secure" %}selected{% endif %}>Aman</option>
-                <option value="Un-Secure" {% if shelter.status == "Un-Secure" %}selected{% endif %}>Tidak Aman</option>
-              </select>
-            </div>
+              <input type="hidden" value="{{ shelter.status }}" name="status">
 
             <button type="submit" class="btn btn-primary">Update</button>
             <a href="/shelter" class="btn btn-warning">Batal</a>

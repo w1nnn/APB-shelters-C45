@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'app.css' %}" />
+  </head>
+  <body>
+    <header>
+      <figure>
+        <img alt="img" src="{% static 'img/favicon.png' %}" />
+      </figure>
+    </header>
+    <main>
+      <div class="banner">
+        <!-- <h5>@win.dev</h5> -->
+        <div>
+          <h3 class="left">Implementasi Algoritma C.45 Dalam</h3>
+          <h4 class="right">
+            Penentuan Bangunan Berstatus Aman Bencana Abgin Puting Beliung
+          </h4>
+        </div>
+        <a href="/home">
+          <button>Temukan Shlters</button>
+        </a>
+
+        <canvas id="dotsCanvas"></canvas>
+      </div>
+    </main>
+
+    <script src="{% static 'app.js' %}"></script>
+  </body>
+</html>

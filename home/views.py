@@ -17,7 +17,11 @@ import base64
 import os
 from .models import Train
 # main
+# Index
 def index(request):
+    return render(request, 'index.html')
+
+def home(request):
     shelters = Shelter.objects.all()
     return render(request, 'home.html', {'shelters': shelters})
 
@@ -276,7 +280,7 @@ def analyze_data(request):
                 'latitude_longitude': latitude_longitude,
                 'shelters': Shelter.objects.all()
             }
-            messages.success(request, f"Prediction: {hasilPrediksi_label}")
+            messages.success(request, f": {hasilPrediksi_label}")
             return render(request, 'home.html', context)
 
         return HttpResponse("Invalid request method", status=400)
@@ -286,3 +290,7 @@ def analyze_data(request):
         logger = logging.getLogger(__name__)
         logger.error(f"An error occurred: {str(e)}")
         return HttpResponse(f"An error occurred: {str(e)}", status=500)
+
+def laporan(request):
+    shelters = Shelter.objects.all()
+    return render(request, 'pages/laporan.html', {'shelters': shelters})
