@@ -25,8 +25,14 @@ urlpatterns = [
     
     path('analyze/', views.analyze_data, name='analyze_data'),
     
+    # Decision Tree
+    path("decision-tree/", views.decision_tree, name="decision-tree"),
+    
     # Laporan
     path("laporan/", views.laporan, name="laporan"),
+    
+    # Classifications save
+    path("save-classification/", views.save_classification, name="save-classification"),
 ]
 
 

@@ -4,20 +4,31 @@ from django.contrib import messages
 from .models import Shelter
 from .models import User
 from .models import Kriteria
+from .models import Classification
+import random
 # D3
-import pandas as pd
-from sklearn.tree import DecisionTreeClassifier
-import matplotlib.pyplot as plt
 from sklearn import metrics
+from sklearn.tree import DecisionTreeClassifier, plot_tree
 from sklearn import tree
+from django.conf import settings
+import pandas as pd
+import matplotlib.pyplot as plt
 import numpy as np
 import io
 import base64
-from django.conf import settings
 import os
+from .models import Train
+from sklearn.model_selection import cross_val_score, KFold
+from graphviz import Digraph
+
 # main
+# Index
 def index(request):
-    return render(request, 'home.html')
+    return render(request, 'index.html')
+
+def home(request):
+    shelters = Classification.objects.all()
+    return render(request, 'home.html', {'shelters': shelters})
 
 def dashboard(request):
     kriteria_count = Kriteria.objects.count()
@@ -120,7 +131,6 @@ def update_shelter(request, id):
     shelter = get_object_or_404(Shelter, id=id)
 
     if request.method == 'POST':
-        # Ambil data dari form
         shelter.nama_bangunan = request.POST.get('nama_bangunan')
         shelter.latitude_longitude = request.POST.get('kordinat')
         shelter.alamat = request.POST.get('alamat')
@@ -128,13 +138,11 @@ def update_shelter(request, id):
         shelter.kolom_bangunan = request.POST.get('kolom_bangunan')
         shelter.status = request.POST.get('status')
 
-        # Simpan perubahan ke database
         shelter.save()
 
         messages.success(request, "Data berhasil diubah.")
-        return redirect('/shelter')  # Ganti dengan nama URL yang sesuai
+        return redirect('/shelter')  
 
-    # Jika metode request bukan POST, render halaman edit dengan data yang ada
     context = {
         'shelter': shelter,
         'kriteria_rangka_atap': Kriteria.objects.filter(nama_kriteria='RANGKA ATAP'),
@@ -197,75 +205,185 @@ def update_kriteria(request, id):
 # Decision Tree
 def analyze_data(request):
     try:
-        # Load data
-        training_file_path = os.path.join(settings.BASE_DIR, 'static/data/data_traning.xlsx')
-        testing_file_path = os.path.join(settings.BASE_DIR, 'static/data/data_testing.xlsx')
+        if request.method == 'POST':
+            latitude_longitude = request.POST.get('latitude_longitude', '')
 
-        # Check if files exist
-        if not os.path.exists(training_file_path):
-            raise FileNotFoundError(f"Training file not found: {training_file_path}")
-        if not os.path.exists(testing_file_path):
-            raise FileNotFoundError(f"Testing file not found: {testing_file_path}")
+            cekData = Classification.objects.filter(latitude_longitude=latitude_longitude).exists()
+            
+            if cekData:
+                messages.success(request, "Aman.")
+            else:
+                messages.error(request, "Tidak Aman.")
+                
+            context = {
+                'latitude_longitude': latitude_longitude,
+                'shelters': Classification.objects.all()
+            }
+            return render(request, 'home.html', context)
 
-        # Read Excel files
-        df = pd.read_excel(training_file_path, engine='openpyxl')
-        dt = pd.read_excel(testing_file_path, engine='openpyxl')
+        return HttpResponse("Invalid request method", status=400)
 
-        # Map categorical values
-        atap_mapping = {'Seng': 1, 'Asbes': 2, 'Genteng': 3, 'Cor': 4}
-        df['ATAP'] = df['ATAP'].map(atap_mapping).fillna(0)
-        dt['ATAP'] = dt['ATAP'].map(atap_mapping).fillna(0)
-
-        rangka_atap_mapping = {'Kayu': 1, 'Baja ringan': 1, 'Besi': 2, 'Beton': 3}
-        df['RANGKA ATAP'] = df['RANGKA ATAP'].map(rangka_atap_mapping).fillna(0)
-        dt['RANGKA ATAP'] = dt['RANGKA ATAP'].map(rangka_atap_mapping).fillna(0)
-
-        kolom_bangunan_mapping = {'Kayu': 1, 'Baja ringan': 1, 'Besi': 2, 'Beton berulang': 3}
-        df['KOLOM BANGUNAN'] = df['KOLOM BANGUNAN'].map(kolom_bangunan_mapping).fillna(0)
-        dt['KOLOM BANGUNAN'] = dt['KOLOM BANGUNAN'].map(kolom_bangunan_mapping).fillna(0)
-
-        decision_mapping = {'Secure': 1, 'Un-Secure': 0}
-        df['DECISION'] = df['DECISION'].map(decision_mapping)
-        dt['DECISION'] = dt['DECISION'].map(decision_mapping)
-
-        features = ['ATAP', 'RANGKA ATAP', 'KOLOM BANGUNAN']
-        xTrain = df[features]
-        yTrain = df['DECISION']
-
-        # Train Decision Tree model
-        dtree = DecisionTreeClassifier()
-        dtree = dtree.fit(xTrain, yTrain)
-
-        # Accuracy calculation
-        xTesting = dt[features]
-        yTesting = dt['DECISION']
-
-        hasilPrediksi = dtree.predict(xTesting)
-        hasilPrediksi_label = ['Secure' if pred == 1 else 'Un-Secure' for pred in hasilPrediksi]
-
-        accuracy = metrics.accuracy_score(yTesting, hasilPrediksi)
-
-        # Generate the decision tree plot
-        plt.figure(figsize=(20,20), facecolor='w')
-        tree.plot_tree(dtree, feature_names=features)
-
-        # Save plot to a BytesIO object
-        buf = io.BytesIO()
-        plt.savefig(buf, format='png')
-        buf.seek(0)
-        plt.close()
-
-        # Encode the plot to base64
-        image_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')
-
-        # Prepare context
-        context = {
-            'image_base64': image_base64,
-            'accuracy': accuracy,
-            'predictions': hasilPrediksi_label,
-        }
-
-        return render(request, 'analyze.html', context)
-    
     except Exception as e:
         return HttpResponse(f"An error occurred: {str(e)}", status=500)
+
+def laporan(request):
+    shelters = Classification.objects.all()
+    return render(request, 'pages/laporan.html', {'shelters': shelters})
+
+
+# Graph
+def create_decision_tree_graph():
+    dot = Digraph(comment='Pohon Keputusan Keamanan Bangunan')
+
+    # Menambahkan node untuk setiap keputusan
+    dot.node('Kolom Bangunan', 'Kolom Bangunan')
+    dot.node('Kayu', 'Kayu')    
+    dot.node('Baja Ringan', 'Baja Ringan')
+    dot.node('Besi', 'Besi')
+    dot.node('Beton Berulang', 'Beton Berulang')
+    dot.node('Rangka Atap', 'Rangka Atap')
+    dot.node('Kayu_Rangka', 'Kayu')
+    dot.node('Baja Ringan_Rangka', 'Baja Ringan')
+    dot.node('Besi_Rangka', 'Besi')
+    dot.node('Atap', 'Atap')
+    dot.node('Seng', 'Seng')
+    dot.node('Asbes', 'Asbes')
+    dot.node('Cor', 'Cor')
+    dot.node('Tidak Aman', 'Tidak Aman')
+    dot.node('Aman', 'Aman')
+
+    # Menambahkan edges sesuai dengan aturan
+    dot.edge('Kolom Bangunan', 'Kayu', label='Kayu')
+    dot.edge('Kolom Bangunan', 'Baja Ringan', label='Baja Ringan')
+    dot.edge('Kolom Bangunan', 'Besi', label='Besi')
+    dot.edge('Kolom Bangunan', 'Beton Berulang', label='Beton Berulang')
+    dot.edge('Kayu', 'Tidak Aman')
+    dot.edge('Baja Ringan', 'Tidak Aman')
+    dot.edge('Besi', 'Rangka Atap')
+    dot.edge('Beton Berulang', 'Aman')
+    dot.edge('Rangka Atap', 'Kayu_Rangka', label='Kayu')
+    dot.edge('Rangka Atap', 'Baja Ringan_Rangka', label='Baja Ringan')
+    dot.edge('Rangka Atap', 'Besi_Rangka', label='Besi')
+    dot.edge('Kayu_Rangka', 'Tidak Aman')
+    dot.edge('Baja Ringan_Rangka', 'Atap')
+    dot.edge('Besi_Rangka', 'Aman')
+    dot.edge('Atap', 'Seng', label='Seng')
+    dot.edge('Atap', 'Asbes', label='Asbes')
+    dot.edge('Atap', 'Cor', label='Cor')
+    dot.edge('Seng', 'Tidak Aman')
+    dot.edge('Asbes', 'Tidak Aman')
+    dot.edge('Cor', 'Aman')
+
+    return dot
+
+def decision_tree(request):
+    import matplotlib
+    matplotlib.use('Agg')
+
+    # Ambil data pelatihan dari model Train
+    training_data = Train.objects.all()
+    df = pd.DataFrame(list(training_data.values('atap', 'rangka_atap', 'kolom_bangunan', 'decision')))
+    
+    if df.empty:
+        raise ValueError("No training data available")
+
+    atap_mapping = {'Seng': 1, 'Asbes': 2, 'Genteng': 3, 'Cor': 4}
+    rangka_atap_mapping = {'Kayu': 1, 'Baja ringan': 1, 'Besi': 2, 'Beton': 3}
+    kolom_bangunan_mapping = {'Kayu': 1, 'Baja ringan': 1, 'Besi': 2, 'Beton berulang': 3}
+    decision_mapping = {'Secure': 1, 'Un-Secure': 0}
+
+    # Mapping for training data
+    df['atap'] = df['atap'].map(atap_mapping).fillna(0)
+    df['rangka_atap'] = df['rangka_atap'].map(rangka_atap_mapping).fillna(0)
+    df['kolom_bangunan'] = df['kolom_bangunan'].map(kolom_bangunan_mapping).fillna(0)
+    df['decision'] = df['decision'].map(decision_mapping)
+
+    # Define features and target for training
+    features = ['atap', 'rangka_atap', 'kolom_bangunan']
+    xTrain = df[features]
+    yTrain = df['decision']
+
+    # Train Decision Tree model
+    dtree = DecisionTreeClassifier(criterion='entropy')
+    dtree.fit(xTrain, yTrain)
+
+    # Visualize Decision Tree using graphviz
+    dot = create_decision_tree_graph()
+    dot.render('pohon_keputusan_aturan', format='png', cleanup=True)
+
+    # Encode the image to base64
+    with open('pohon_keputusan_aturan.png', 'rb') as image_file:
+        image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
+
+    # Retrieve data from Shelter model
+    shelters = Shelter.objects.all()
+    if shelters.count() == 0:
+        raise ValueError("No shelter data available")
+
+    # Prepare data for prediction
+    shelter_data = []
+    for shelter in shelters:
+        atap_value = float(atap_mapping.get(shelter.atap, 0))
+        rangka_atap_value = float(rangka_atap_mapping.get(shelter.rangka_atap, 0))
+        kolom_bangunan_value = float(kolom_bangunan_mapping.get(shelter.kolom_bangunan, 0))
+       
+        shelter_data.append({
+            'id': shelter.id,
+            'latitude_longiitude': shelter.latitude_longitude,
+            'atap': atap_value,
+            'rangka_atap': rangka_atap_value,
+            'kolom_bangunan': kolom_bangunan_value,
+            'alamat': shelter.alamat
+        })
+
+    # Create DataFrame for shelter data
+    test_data_df = pd.DataFrame([{
+        'atap': shelter['atap'],
+        'rangka_atap': shelter['rangka_atap'],
+        'kolom_bangunan': shelter['kolom_bangunan']
+    } for shelter in shelter_data])
+
+    # Predict
+    predictions = dtree.predict(test_data_df)
+    predictions_labels = ['Secure' if pred == 1 else 'Un-Secure' for pred in predictions]
+
+    # Attach predictions to shelter data
+    for i, shelter in enumerate(shelter_data):
+        shelter['prediction'] = predictions_labels[i]
+
+    # Prepare context
+    context = {
+        'image_base64': image_base64,
+        'shelters': shelter_data
+    }
+
+    return render(request, 'hasil.html', context)
+
+# Save Classification
+def save_classification(request):
+    if request.method == 'POST':
+        latitude_longitude = request.POST.getlist('kordinat')
+        atap = request.POST.getlist('atap')
+        rangka_atap = request.POST.getlist('rangka_atap')
+        kolom_bangunan = request.POST.getlist('kolom_bangunan')
+        prediction = request.POST.getlist('prediction')
+        alamat = request.POST.getlist('alamat')
+
+        for i in range(len(latitude_longitude)):
+            if Classification.objects.filter(latitude_longitude=latitude_longitude[i]).exists():
+                continue
+
+            Classification.objects.create(
+                latitude_longitude=latitude_longitude[i],
+                atap=atap[i],
+                rangka_atap=rangka_atap[i],
+                kolom_bangunan=kolom_bangunan[i],
+                decision=prediction[i],
+                alamat=alamat[i]
+            )
+        messages.success(request, "Data berhasil disimpan.")
+        return redirect('/dashboard')
+
+    return render(request, 'pages/dtree.html')
+
+   

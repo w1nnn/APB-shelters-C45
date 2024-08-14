@@ -65,3 +65,19 @@ class Train(models.Model):
     class Meta:
         verbose_name = "Train"
         verbose_name_plural = "Trains"
+
+class Classification(models.Model):
+    id = models.AutoField(primary_key=True)
+    latitude_longitude = models.CharField(max_length=255)
+    atap = models.CharField(max_length=50)
+    rangka_atap = models.CharField(max_length=50)
+    kolom_bangunan = models.CharField(max_length=50)
+    decision = models.CharField(max_length=50)
+    alamat = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.decision
+
+    class Meta:
+        verbose_name = "Classification"
+        verbose_name_plural = "Classifications"

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Decision Tree Visualization</title>
+  </head>
+  <body>
+    <h1>Pohon Keputusan Keamanan Bangunan</h1>
+    <img src="data:image/png;base64,{{ image_base64 }}" alt="Decision Tree" />
+
+    <h2>Informasi Gain dari Fitur</h2>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Fitur</th>
+          <th>Gain</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for feature, importance in feature_importances.items %}
+        <tr>
+          <td>{{ feature }}</td>
+          <td>{{ importance|floatformat:4 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h2>Data Shelter dan Prediksi</h2>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Latitude & Longitude</th>
+          <th>Atap</th>
+          <th>Rangka Atap</th>
+          <th>Kolom Bangunan</th>
+          <th>Alamat</th>
+          <th>Prediksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for shelter in shelters %}
+        <tr>
+          <td>{{ shelter.id }}</td>
+          <td>{{ shelter.latitude_longiitude }}</td>
+          <td>{{ shelter.atap }}</td>
+          <td>{{ shelter.rangka_atap }}</td>
+          <td>{{ shelter.kolom_bangunan }}</td>
+          <td>{{ shelter.alamat }}</td>
+          <td>{{ shelter.prediction }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>

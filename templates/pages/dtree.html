@@ -13,7 +13,7 @@
   <div class="row">
     <div class="col-12">
       <div class="card mb-4">
-        <h2 class="text-center my-5">Laporan Bangunan Shelter</h2>
+        
         {% if messages %} {% for message in messages %}
         <script>
           alert("{{message}}");
@@ -21,64 +21,107 @@
         {% endfor %} {% endif %}
         <div class="card-body px-0 pt-0 pb-2">
           <div class="table-responsive p-0">
-            <table
-              class="table table-striped table-hover align-items-center mb-0"
-            >
-              <thead>
+            <div class="container">
+              <h5 class="mt-5">Decision Tree Visualization</h5>
+              <img
+              src="data:image/png;base64,{{ image_base64 }}"
+              alt="Decision Tree"
+              class="img-fluid mb-4 text-center"
+              />
+              
+              <h5>Hasil Cross-Validation</h2>
+              <table class="table table-bordered table-striped">
+                <thead>
+                  <tr>
+                    <th>Fitur</th>
+                    <th>Gain</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for feature, importance in feature_importances.items %}
+                  <tr>
+                    <td>{{ feature }}</td>
+                    <td>{{ importance|floatformat:4 }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              
+              <button class="btn btn-sm btn-primary my-3" type="button" onclick="document.getElementById('classificationForm').submit();">Save Classification</button>
+              
+              <h5>Classification Results - Secure</h5>
+        <table class="table table-bordered table-striped">
+            <thead>
                 <tr>
-                  <th
-                    class="text-uppercase align-middle text-center text-secondary text-xxs font-weight-bolder opacity-7"
-                  >
-                    Id
-                  </th>
-                  <th
-                    class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2"
-                  >
-                    Latitude Longitude
-                  </th>
-                  <th
-                    class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
-                  >
-                    Alamat
-                  </th>
-                  <th
-                    class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
-                  ></th>
+                    <th>ID</th>
+                    <th>Kordinat</th>
+                    <th>Atap</th>
+                    <th>Rangka Atap</th>
+                    <th>Kolom Bangunan</th>
+                    <th>Prediction</th>
+                    <!-- <th>Alamat</th> -->
                 </tr>
-              </thead>
-              <tbody>
+            </thead>
+            <tbody>
+              <form id="classificationForm" action="{% url 'save-classification' %}" method="post">
                 {% for shelter in shelters %}
-                <tr style="font-size: 14px">
-                  <td class="align-middle text-center">{{ shelter.id }}</td>
-                  <td>{{ shelter.latitude_longitude }}</td>
-                  <td class="align-middle text-center" style="color: blue">
-                    {{ shelter.alamat }}
-                  </td>
-
-                  <td class="align-middle text-center">
-                    <span
-                      style="width: 100px; font-size: 10px"
-                      class="badge badge-sm bg-gradient-success"
-                      >Terverivikasi</span
-                    >
-                  </td>
+                {% if shelter.prediction == "Secure" %}
+                  {% csrf_token %}
+                  <input type="hidden" name="kordinat" value="{{ shelter.latitude_longiitude }}">
+                  <input type="hidden" name="atap" value="{{ shelter.atap }}">
+                  <input type="hidden" name="rangka_atap" value="{{ shelter.rangka_atap }}">
+                  <input type="hidden" name="kolom_bangunan" value="{{ shelter.kolom_bangunan }}">
+                  <input type="hidden" name="prediction" value="{{ shelter.prediction }}">
+                  <input type="hidden" name="alamat" value="{{ shelter.alamat }}">
+                  
+                  <tr>
+                    <td>{{ shelter.id }}</td>
+                    <td>{{ shelter.latitude_longiitude }}</td>
+                    <td>{{ shelter.atap }}</td>
+                    <td>{{ shelter.rangka_atap }}</td>
+                    <td>{{ shelter.kolom_bangunan }}</td>
+                    <td>{{ shelter.prediction }}</td>
+                    <!-- <td>{{ shelter.alamat }}</td> -->
                 </tr>
-                {% empty %}
-                <tr>
-                  <td colspan="9" class="text-center">No shelters available</td>
-                </tr>
+                {% endif %}
                 {% endfor %}
-              </tbody>
-            </table>
+              </form>
+            </tbody>
+        </table>
+
+        <h5>Classification Results - Un-Secure</h5>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Kordinat</th>
+                    <th>Atap</th>
+                    <th>Rangka Atap</th>
+                    <th>Kolom Bangunan</th>
+                    <th>Prediction</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for shelter in shelters %}
+                {% if shelter.prediction == "Un-Secure" %}
+                <tr>
+                    <td>{{ shelter.id }}</td>
+                    <td>{{ shelter.latitude_longiitude }}</td>
+                    <td>{{ shelter.atap }}</td>
+                    <td>{{ shelter.rangka_atap }}</td>
+                    <td>{{ shelter.kolom_bangunan }}</td>
+                    <td>{{ shelter.prediction }}</td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <!-- script -->
-  <script>
-    window.print();
-  </script>
   <!-- <div class="row">
     <div class="col-12">
       <div class="card mb-4">
