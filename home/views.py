@@ -230,7 +230,7 @@ def analyze_data(request):
                 
             context = {
                 'latitude_longitude': latitude_longitude,
-                'shelters': Classification.objects.all()
+                'shelters': Shelter.objects.all()
             }
             return render(request, 'home.html', context)
 
@@ -262,30 +262,30 @@ def create_decision_tree_graph():
     dot.node('Seng', 'Seng')
     dot.node('Asbes', 'Asbes')
     dot.node('Cor', 'Cor')
-    dot.node('Tidak Aman', 'Tidak Aman')
-    dot.node('Aman', 'Aman')
+    dot.node('Un-Secure', 'Un-Secure')
+    dot.node('Secure', 'Secure')
 
     # Menambahkan edges sesuai dengan aturan
-    dot.edge('Kolom Bangunan', 'Kayu', label='Kayu')
-    dot.edge('Kolom Bangunan', 'Baja Ringan', label='Baja Ringan')
-    dot.edge('Kolom Bangunan', 'Besi', label='Besi')
-    dot.edge('Kolom Bangunan', 'Beton Berulang', label='Beton Berulang')
-    dot.edge('Kayu', 'Tidak Aman')
-    dot.edge('Baja Ringan', 'Tidak Aman')
+    dot.edge('Kolom Bangunan', 'Kayu', label='[Kayu = 1.0]')
+    dot.edge('Kolom Bangunan', 'Baja Ringan', label='[Baja Ringan = 1.0]')
+    dot.edge('Kolom Bangunan', 'Besi', label='[Besi = 2.0]')
+    dot.edge('Kolom Bangunan', 'Beton Berulang', label='[Beton Berulang = 3.0]')
+    dot.edge('Kayu', 'Un-Secure')
+    dot.edge('Baja Ringan', 'Un-Secure')
     dot.edge('Besi', 'Rangka Atap')
-    dot.edge('Beton Berulang', 'Aman')
-    dot.edge('Rangka Atap', 'Kayu_Rangka', label='Kayu')
-    dot.edge('Rangka Atap', 'Baja Ringan_Rangka', label='Baja Ringan')
-    dot.edge('Rangka Atap', 'Besi_Rangka', label='Besi')
-    dot.edge('Kayu_Rangka', 'Tidak Aman')
+    dot.edge('Beton Berulang', 'Secure')
+    dot.edge('Rangka Atap', 'Kayu_Rangka', label='[Kayu = 1.0]')
+    dot.edge('Rangka Atap', 'Baja Ringan_Rangka', label='[Baja Ringan = 1.0]')
+    dot.edge('Rangka Atap', 'Besi_Rangka', label='[Besi = 2.0]')
+    dot.edge('Kayu_Rangka', 'Un-Secure')
     dot.edge('Baja Ringan_Rangka', 'Atap')
-    dot.edge('Besi_Rangka', 'Aman')
-    dot.edge('Atap', 'Seng', label='Seng')
-    dot.edge('Atap', 'Asbes', label='Asbes')
-    dot.edge('Atap', 'Cor', label='Cor')
-    dot.edge('Seng', 'Tidak Aman')
-    dot.edge('Asbes', 'Tidak Aman')
-    dot.edge('Cor', 'Aman')
+    dot.edge('Besi_Rangka', 'Secure')
+    dot.edge('Atap', 'Seng', label='[Seng = 1.0]')
+    dot.edge('Atap', 'Asbes', label='[Asbes = 2.0]')
+    dot.edge('Atap', 'Cor', label='[Cor = 3.0]')
+    dot.edge('Seng', 'Un-Secure')
+    dot.edge('Asbes', 'Un-Secure')
+    dot.edge('Cor', 'Secure')
 
     return dot
 
